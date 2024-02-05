@@ -1,0 +1,808 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "jsCode": "function comparator(x, y) {\n  return (x.json.completeAfter == y.json.completeAfter) && (x.json.completeBefore == x.json.completeBefore) && (x.json.address == y.json.address) && (x.json.overrides.recipientName == y.json.address);\n}\nlet temp = [];\nfor (let index = 0; index < $input.length; index++) {\n  temp.push(0);\n}\nlet counter = 1;\nlet output = [];\nfor (let i = 0; i < $input.length ; i++){\n  for (let j = 0; j < $input.length; j++){\n    if (temp[j] == 0){\n      if (comparator($input.all()[i],$input.all()[j])){\n        if (temp[i]==0){\n        temp[i] = counter;\n        temp[j] = counter;\n          counter++;\n        }else{\n          temp[j] = temp[i];\n        }\n      }\n    }\n  }\n}\n\nconst output2 = [];\n  output2.push({\"json\": {\"output\" : {}}});\n\nfor (let k = 0; k < temp.length; k++){\n  if (temp[k] != 0){\n    if (output.length < temp[k]){\n      output.push([]);\n      output[temp[k]].push($input.all()[k].json.id);\n    }else{\n      output[temp[k]].push($input.all()[k].json.id);\n    }\n  }\n}\n\nfor (let nest of output) {\n  for (let id of nest) {\n    output2\n  }\n}\n\nreturn output2;"
+      },
+      "id": "84416467-a86d-4590-80bd-442d61d92d77",
+      "name": "Code3",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        460,
+        460
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "c2b5d531-ae61-4325-a625-0b1ca12bcf8d",
+      "name": "Loop Over Items",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        2580,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "destination": {
+          "destinationProperties": {
+            "unparsed": true,
+            "address": "={{ $json.address }}",
+            "addressApartment": "={{ $json.apartment }}"
+          }
+        },
+        "additionalFields": {
+          "completeAfter": "={{ $json.date }}",
+          "completeBefore": "={{ $json.date2 }}",
+          "notes": "={{ $json.myNewField }}",
+          "recipient": {
+            "recipientProperties": {
+              "recipientName": "={{$json.name}}",
+              "recipientPhone": "={{$json.phone}}"
+            }
+          }
+        }
+      },
+      "id": "5dae7bf2-0a28-4b0b-839f-9e8fc49193f2",
+      "name": "create task",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        3320,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {}
+      },
+      "id": "b9c0533e-ce57-4338-9998-aa578c80a0c0",
+      "name": "get tasks",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        3640,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {}
+      },
+      "id": "ec78207a-94c5-41f2-981f-e16a07bdac6d",
+      "name": "Onfleet",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        360,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "id": "={{ $json.id }}"
+      },
+      "id": "56f2d2d9-99d9-4b4e-b672-046ce7edffaf",
+      "name": "Onfleet1",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        580,
+        660
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "id": "={{ $('order duplicate check').item.json.get }}",
+        "updateFields": {
+          "notes": "={{ $json.condensedNotes }}"
+        }
+      },
+      "id": "3ad2516e-70be-42ba-ae94-71939ba63c4c",
+      "name": "Onfleet2",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        3800,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "id": "={{ $('order duplicate check').item.json.create }}"
+      },
+      "id": "1d8518de-6b96-4abf-930c-ed9a598f29ef",
+      "name": "Onfleet3",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        4140,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "content": "The path that is connected to Order Created is the functional one"
+      },
+      "id": "662aae47-5b01-4a48-b3d1-95d53c44b491",
+      "name": "Sticky Note",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        0,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "topic": "orders/create"
+      },
+      "id": "93f8a2ee-6a2a-4b63-b1f7-4f20013a5991",
+      "name": "Shopify Trigger Order Created",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [
+        120,
+        940
+      ],
+      "webhookId": "bdb225ca-9ee5-45f3-81d4-d76c256aed34"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nconst output = [];\nfor (const order of $input.all()) {\n  for (const item of order.json.line_items){\n    let title = item.name.trim();\n    let month = \"\";\n    let day = \"\";\n    let isMonth = true;\n    for (let i = 0; i < title.length; i++){\n      if (!isNaN(title[i]) && isMonth){\n        month += title[i];\n      }else if (title[i] == '月'){\n        isMonth = false;\n      }else if (!isNaN(title[i]) && !isMonth){\n        day += title[i];\n      }else if (title[i] == '日'){\n        if (!isNaN(month) && !isNaN(day)){\n          console.log(month);\n          console.log(day);\n          output.push({\"json\": {\"month\": month,\n                                \"day\": day}});\n        }\n      }else{\n        break;\n      }\n    }//end for\n  }\n}\nconsole.log(output)\nreturn output;\n"
+      },
+      "id": "e8f276c5-f9f7-456d-864e-07090a43f11d",
+      "name": "capture date1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        620,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nconst output2 = [];\nfor (const item of $input.all()) {\n  \n  const now = new Date($now);\n/*\n  let output = new Date();\n  output.setDate(item.json.day);\n  output.setMonth(item.json.month -1);\n  if (now > output){\n    //output.setYear(output.getFullYear() + 1);\n  }\n  output.setHours(12);\n  output.setMinutes(0);\n  output.setSeconds(0);\n  output.setMilliseconds(0);\n  let outputB = new Date(output);\n  outputB.setHours(17);\n\n  output2.push({\"json\": {\"date\": DateTime.fromISO(oDate.toISOString()), \"date2\": DateTime.fromISO(oDate2.toISOString())}});\n*/\n  let x =  DateTime.local()\n  /* console.log(x.toString().substring(24,29).substring(1,2));*/\n\n  let y = x.toString().substring(24,29).substring(1,2);\n\n  let output = new Date($now);\n\n  console.log((Number(output.getMonth())+1));\n  console.log((Number(item.json.month)));\n  console.log(Number(output.getMonth() + 1) > item.json.month);\n  if (Number(output.getMonth() + 1) > item.json.month){\n    console.log(\"year: \" + output.year);\n    output.setYear(output.getFullYear()+1);\n  }\n  \n  output.setMonth(item.json.month - 1);\n  output.setDate(item.json.day);\n  output.setMinutes(0);\n  output.setSeconds(0);\n  output.setMilliseconds(0);\n\n  let o = new Date();\n  o = new Date(output);\n  output.setHours(1 + Number(y));\n  o.setHours(24 + Number(y));\n  /*console.log(output.toISOString());\n  console.log(o.toISOString());*/\n/*\n  strD = \"\" + item.json.day;\n  strM = \"\" + item.json.month;\n  if (item.json.day.length == 1){strD = \"0\" + item.json.day;}\n  if (item.json.month.length == 1){strD = \"0\" + item.json.month;}\n  str1 = now.getFullYear() + \"-\" + strM + \"-\" + strD + \"T12:00:00\";\n  str2 = now.getFullYear() + \"-\" + strM + \"-\" + strD + \"T17:00:00\";\n  let y = DateTime.fromISO(str1);\n  let z = DateTime.fromISO(str2);\n  output2.push({\"json\": {\"date\": y, \"date2\": z}});*/\n  \n  output2.push({\"json\": {\"date\": output.toISOString().substring(0,23), \"date2\": o.toISOString().substring(0,23)}});\n}\n\nreturn output2;\n"
+      },
+      "id": "cf36fb46-d226-426a-8215-d5c9f3216503",
+      "name": "format date1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        940
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let output2 = [];\n for (let x of $('Shopify Trigger Order Created').item.json.line_items){\n   let output =  x.name + \" *\" + x.quantity; \n    console.log(output);\n   if (x.name != \"Tip\"){\n   output2.push({\"json\": {\"notes\": output}});\n   }\n }\n\n\nreturn output2; "
+      },
+      "id": "414f004a-e963-4dde-bf0d-e3184cbfa2a5",
+      "name": "format notes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        820,
+        780
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "notes",
+              "stringValue": "={{ $json.notes }}"
+            },
+            {
+              "name": "date",
+              "stringValue": "={{ $('format date1').item.json.date }}"
+            },
+            {
+              "name": "date2",
+              "stringValue": "={{ $('format date1').item.json.date2 }}"
+            },
+            {
+              "name": "address",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.shipping_address.address1 }} {{ $('Shopify Trigger Order Created').item.json.shipping_address.city }} {{ $('Shopify Trigger Order Created').item.json.shipping_address.province }} {{ $('Shopify Trigger Order Created').item.json.shipping_address.country }} {{ $('Shopify Trigger Order Created').item.json.shipping_address.zip }}"
+            },
+            {
+              "name": "name",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.shipping_address.name }}"
+            },
+            {
+              "name": "orderID",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.id }}"
+            },
+            {
+              "name": "phone",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.shipping_address.phone }}"
+            },
+            {
+              "name": "customer_notes",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.note }}"
+            },
+            {
+              "name": "apartment",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.shipping_address.address2 }} "
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "329cb69c-25d3-4495-808d-8f01a48374f8",
+      "name": "consolidate order input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        1640,
+        580
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "\nfunction func(x, y) {\n  return (x.json.completeAfter == y.json.completeAfter) && (x.json.completeBefore == y.json.completeBefore) && (x.json.destination.address.apartment == y.json.destination.address.apartment)&& (x.json.destination.address.state == y.json.destination.address.state)&& (x.json.destination.address.postalCode == y.json.destination.address.postalCode)&& (x.json.destination.address.number == y.json.destination.address.number) && (x.json.destination.address.street == y.json.destination.address.street)&& (x.json.destination.address.city == y.json.destination.address.city)&& (x.json.destination.address.country == y.json.destination.address.country)&& (x.json.overrides.recipientName == y.json.overrides.recipientName);\n}\nlet breaker = false;\nlet output = [];\nfor (let i = 0; i < $input.all().length ; i++){\n  let z = $input.all()[i];\n  if (z.json.id != $('combined task').all()[0].json.id && func($('combined task').all()[0], z)) {\n    breaker = true;\n    output.push({\"json\": {\"get\": z.json.id, \"create\": $('combined task').all()[0].json.id, \"notes\": z.json.notes, \"creatednotes\" : $('combined task').all()[0].json.notes }});\n      break;\n  }\n}\n\nif (!breaker){output.push({\"json\": {\"get\": \"default\", \"create\": \"\", \"notes\": \"\", \"creatednotes\": \"\"}});};\nreturn output;"
+      },
+      "id": "c657c807-5056-495a-8a2b-5275371995ee",
+      "name": "order duplicate check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        3860,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "returnAll": true,
+        "filters": {}
+      },
+      "id": "2a5668b2-6822-4b6e-bdfd-0cc18272d76f",
+      "name": "Onfleet4",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        660,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "content": "delete all tasks"
+      },
+      "id": "c6a1d110-1552-4bc9-b925-61f2f7b32a7e",
+      "name": "Sticky Note1",
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        260,
+        620
+      ]
+    },
+    {
+      "parameters": {
+        "authentication": "accessToken",
+        "topic": "orders/cancelled"
+      },
+      "id": "8cf962e3-2119-462e-bb76-96a1fb9bbb7f",
+      "name": "Shopify Trigger Order Cancelled",
+      "type": "n8n-nodes-base.shopifyTrigger",
+      "typeVersion": 1,
+      "position": [
+        160,
+        1140
+      ],
+      "webhookId": "f42cd841-0653-495e-8e0a-2b55c3b45b0c"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nlet output2 = [];\n\nfor (const item of $input.all()) {\n  \n  let str = item.json.notes;\n  let c_notes = \"\";\n\n  for (let i = 0; i < str.length; i++){\n    if (str[i] = '_' && str[i+1] == '_'){\n      c_notes = str.substring(i+3);\n      str = str.substring(0,i);\n      break;\n    }\n  }\n\n  let o = [];\n  let recent = 0;\n\n  const lines = str.split('\\n');\n\n  for (let i of lines){\n    let isNum = true;\n    for (let j of i){\n      if (isNaN(j)){\n        isNum = false;\n          }\n    }\n    if (isNum){\n      recent = i;\n      let isPresent = false;\n      for (let oo = 0; oo < o.length; oo++){\n        if (o[oo][0] == i){\n          isPresent = true;\n        }\n      }\n      if (!isPresent){\n      let u = [];\n      u.push(i);\n      o[o.length] = u;\n        console.log(o[o.length - 1][0]);\n      }\n    }else{\n      for (let oo = 0; oo < o.length; oo++){\n        if (o[oo][0] == recent){\n          o[oo].push(i);\n        }\n      }\n    }\n    //console.log(i);\n  }\n\n    let x = $('Shopify Trigger Order Cancelled').first().json.id;\n    let orderFound = false;\n\n    for (let i = 0; i < o.length; i++){\n      if (o[i][0] == x){\n        o.splice(i,1);\n        i--;\n        orderFound = true;\n      }\n    }\n    \n  let output = \"\";\n  for (let i = 0; i < o.length; i++){\n    for (let j = 0; j < o[i].length; j++){\n      console.log(i + \" \" + j + \" \" + o[i][j]);\n      output += o[i][j] + \"\\n\";\n      \n    }\n  }\n  item.json.condensedNotes = output;\n\n  item.json.emptyOrder = (item.json.condensedNotes == \"\");\n\n  if (orderFound){\n  output2.push({\"json\": {\"id\": item.json.id, \"notes\": output + \"__\" + c_notes, \"emptyOrder\": item.json.emptyOrder}});\n  }\n\n}\n  \n\nreturn output2;\n"
+      },
+      "id": "4fd9cde0-da46-4c8e-81e3-7586243cdf7a",
+      "name": "Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1000,
+        1140
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\n\nfor (const item of $input.all()) {\n  if (item.json.customer_notes == null){\n    item.json.customer_notes = \"\";\n  }\n  \n  item.json.myNewField = \"\" + item.json.orderID + \"\\n\" + item.json.notes + \"\\n__\\n\" + item.json.customer_notes;\n}\n\nreturn $input.all();"
+      },
+      "id": "aae2d238-3fb3-45d8-9d8b-91cb77c62d75",
+      "name": "Code1",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2820,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{ $json.get }}",
+              "value2": "default"
+            }
+          ]
+        }
+      },
+      "id": "95a6c2f9-e475-4bcd-a65b-93bf1d11f08e",
+      "name": "IF",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        4020,
+        760
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop over input items and add a new field called 'myNewField' to the JSON of each one\nfor (const item of $input.all()) {\n  \n  let str = item.json.notes;\n  let c_notes = \"\";\n\n  for (let i = 0; i < str.length; i++){\n    if (str[i] = '_' && str[i+1] == '_'){\n      c_notes = str.substring(i+3);\n      str = str.substring(0,i);\n      break;\n    }\n  }\n\n  let o = [];\n  let recent = 0;\n\n  const lines = str.split('\\n');\n\n  for (let i of lines){\n    let isNum = true;\n    for (let j of i){\n      if (isNaN(j)){\n        isNum = false;\n          }\n    }\n    if (isNum){\n      recent = i;\n      let isPresent = false;\n      for (let oo = 0; oo < o.length; oo++){\n        if (o[oo][0] == i){\n          isPresent = true;\n        }\n      }\n      if (!isPresent){\n      let u = [];\n      u.push(i);\n      o[o.length] = u;\n        console.log(o[o.length - 1][0]);\n      }\n    }else{\n      for (let oo = 0; oo < o.length; oo++){\n        if (o[oo][0] == recent){\n          o[oo].push(i);\n        }\n      }\n    }\n    //console.log(i);\n  }\n\n  let str2 = item.json.creatednotes;\n\nfor (let i = 0; i < str2.length; i++){\n    if (str2[i] = '_' && str2[i+1] == '_'){\n      c_notes += str2.substring(i+3);\n      str2 = str2.substring(0,i);\n      break;\n    }\n  }\n  \n    const lines2 = str2.split('\\n');\n  \n  let isPresent = false;\n  for (let oo = 0; oo < o.length; oo++){\n    if (o[oo][0] == lines2[0]){\n      isPresent = true;\n    }\n  }\n  if (!isPresent){\n    let u = [];\n    u.push(lines2[0]);\n    o[o.length] = u;\n  }\n  for (let oo = 0; oo < o.length; oo++){\n    if (o[oo][0] == lines2[0]){\n      o[oo][o[oo].length] = lines2[1];\n    }\n  }\n\n  let output = \"\";\n  for (let i = 0; i < o.length; i++){\n    for (let j = 0; j < o[i].length; j++){\n      console.log(i + \" \" + j + \" \" + o[i][j]);\n      output += o[i][j] + \"\\n\";\n    }\n  }\n  item.json.condensedNotes = output + \"__\" + c_notes;\n}\n\nreturn $input.all();"
+      },
+      "id": "ced0a000-850f-4a50-b79b-a49d91bd1f3b",
+      "name": "Code2",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2740,
+        1040
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.emptyOrder }}",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "id": "ece17147-39b3-43f3-bbb5-ad41ccaf78be",
+      "name": "IF1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        1320,
+        1260
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "delete",
+        "id": "={{ $json.id }}"
+      },
+      "id": "5ea1e278-4623-401e-a932-6e9ec2ed55ca",
+      "name": "Onfleet5",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        1900,
+        1240
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "id": "={{ $json.id }}",
+        "updateFields": {
+          "notes": "={{ $json.notes }}"
+        }
+      },
+      "id": "528f8059-19da-4d2c-8f14-0c27b76df26c",
+      "name": "Onfleet6",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        2140,
+        1340
+      ]
+    },
+    {
+      "parameters": {
+        "fields": {
+          "values": [
+            {
+              "name": "address",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.billing_address.address1 }} {{ $('Shopify Trigger Order Created').item.json.billing_address.city }} {{ $('Shopify Trigger Order Created').item.json.billing_address.province }} {{ $('Shopify Trigger Order Created').item.json.billing_address.country }} {{ $('Shopify Trigger Order Created').item.json.billing_address.zip }}"
+            },
+            {
+              "name": "apartment",
+              "stringValue": "={{ $('Shopify Trigger Order Created').item.json.billing_address.address2 }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "d1a08289-e378-464f-b0c5-f0b9612562ff",
+      "name": "Edit Fields",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        2380,
+        260
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "58f334c9-a5ac-419e-8b71-a4b972191a26",
+              "leftValue": "={{$json.phone}}",
+              "rightValue": "=null",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "99dce022-a87b-4888-bcad-69affd955d24",
+      "name": "If1",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        2980,
+        560
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "3ec0be20-bab1-4868-a256-8e57b2784be3",
+      "name": "combined task",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.2,
+      "position": [
+        3620,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "create",
+        "destination": {
+          "destinationProperties": {
+            "unparsed": true,
+            "address": "={{ $json.address }}",
+            "addressApartment": "={{ $json.apartment }}"
+          }
+        },
+        "additionalFields": {
+          "completeAfter": "={{ $json.date }}",
+          "completeBefore": "={{ $json.date2 }}",
+          "notes": "={{ $json.myNewField }}",
+          "recipientName": "{{$json.name}}"
+        }
+      },
+      "id": "de8e6134-6f98-4c04-85e2-60fb94a7e89e",
+      "name": "Onfleet7",
+      "type": "n8n-nodes-base.onfleet",
+      "typeVersion": 1,
+      "position": [
+        3260,
+        420
+      ],
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "c7f6f666-bad7-4242-bbe5-91e7ab4e1b9c",
+              "leftValue": "={{ $json.address }}",
+              "rightValue": "=^.....+$",
+              "operator": {
+                "type": "string",
+                "operation": "notRegex"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "6077b994-fa2f-4263-842c-e20c8d838da9",
+      "name": "If",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1880,
+        380
+      ]
+    }
+  ],
+  "pinData": {
+    },
+    "Onfleet2": {
+      "main": [
+        [
+          {
+            "node": "Onfleet3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Onfleet3": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shopify Trigger Order Created": {
+      "main": [
+        [
+          {
+            "node": "capture date1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "capture date1": {
+      "main": [
+        [
+          {
+            "node": "format date1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "format date1": {
+      "main": [
+        [
+          {
+            "node": "format notes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "format notes": {
+      "main": [
+        [
+          {
+            "node": "consolidate order input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consolidate order input": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "order duplicate check": {
+      "main": [
+        [
+          {
+            "node": "IF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shopify Trigger Order Cancelled": {
+      "main": [
+        [
+          {
+            "node": "Onfleet4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Onfleet4": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "If1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Onfleet2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "IF1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "IF1": {
+      "main": [
+        [
+          {
+            "node": "Onfleet5",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Onfleet6",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        []
+      ]
+    },
+    "If1": {
+      "main": [
+        [
+          {
+            "node": "Onfleet7",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "create task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "combined task": {
+      "main": [
+        [
+          {
+            "node": "get tasks",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Onfleet7": {
+      "main": [
+        [
+          {
+            "node": "combined task",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "create task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "24ae84ab-a75e-414a-a2bc-ab6c5d622ca9",
+  "meta": {
+    "instanceId": "18346838d75bf56020e3a3f359b5c04bded52865feb3ba575e6bb9c5e642e965"
+  },
+  "id": "pHUTlixLbY6jcYFP",
+  "tags": []
+}
